@@ -1,364 +1,507 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Ahmed.">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="AHMED.">
 <meta name="theme-color" content="#1C2B4A">
-<title>Ahmed.</title>
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%231C2B4A'/><text y='.9em' font-size='80' x='10' fill='%23E8472A' font-family='Arial Black'>A.</text></svg>">
-<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<title>AHMED.</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  body { background: #F0EBE1; font-family: Georgia, serif; color: #1C2B4A; overscroll-behavior: none; }
-  input[type=range] { accent-color: #E8472A; cursor: pointer; width: 100%; }
-  input::placeholder { color: rgba(28,43,74,0.3); font-style: italic; }
-  button:active { opacity: 0.8; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  ::-webkit-scrollbar { display: none; }
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { background: #F0EBE1; font-family: Georgia, serif; color: #1C2B4A; }
+
+header { background: #1C2B4A; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; }
+.logo { font-family: 'Arial Black', sans-serif; font-size: 16px; color: #F0EBE1; letter-spacing: 0.15em; }
+.logo span { color: #E8472A; }
+.header-right { font-family: 'Arial Black', sans-serif; font-size: 9px; color: rgba(240,235,225,0.4); letter-spacing: 0.12em; display: flex; align-items: center; gap: 10px; }
+.reddot { width: 6px; height: 6px; border-radius: 50%; background: #E8472A; }
+
+nav { background: white; display: flex; border-bottom: 1px solid rgba(28,43,74,0.1); position: sticky; top: 44px; z-index: 10; }
+nav button { flex: 1; padding: 13px; border: none; background: transparent; font-family: 'Arial Black', sans-serif; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(28,43,74,0.35); border-bottom: 3px solid transparent; cursor: pointer; }
+nav button.on { background: #1C2B4A; color: #F0EBE1; border-bottom: 3px solid #E8472A; }
+
+.page { display: none; padding: 20px 18px 80px; max-width: 520px; margin: 0 auto; }
+.page.on { display: block; }
+
+/* TODAY */
+.banner { background: #1C2B4A; border-radius: 14px; padding: 16px 18px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+.banner-left .tag { font-family: 'Arial Black', sans-serif; font-size: 9px; letter-spacing: 0.2em; color: #E8472A; margin-bottom: 4px; }
+.banner-left .tagline { font-style: italic; font-size: 13px; color: #F0EBE1; }
+.banner-right .big { font-family: 'Arial Black', sans-serif; font-size: 42px; color: #E8472A; line-height: 1; text-align: right; }
+.banner-right .small { font-family: 'Arial Black', sans-serif; font-size: 8px; letter-spacing: 0.15em; color: rgba(240,235,225,0.4); margin-top: 2px; }
+
+.mode-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+.mode-text .lbl { font-family: 'Arial Black', sans-serif; font-size: 9px; letter-spacing: 0.2em; color: rgba(28,43,74,0.38); margin-bottom: 3px; }
+.mode-text .sub { font-style: italic; font-size: 12px; }
+.toggle { display: flex; border: 2px solid #1C2B4A; border-radius: 8px; overflow: hidden; }
+.toggle button { padding: 8px 18px; border: none; font-family: 'Arial Black', sans-serif; font-size: 10px; letter-spacing: 0.1em; cursor: pointer; background: transparent; color: #1C2B4A; }
+.toggle button.on { background: #1C2B4A; color: #F0EBE1; }
+
+.section-title { display: flex; align-items: center; gap: 10px; margin: 18px 0 10px; }
+.section-title span { font-family: 'Arial Black', sans-serif; font-size: 9px; letter-spacing: 0.25em; color: rgba(28,43,74,0.38); }
+.section-title::after { content: ''; flex: 1; height: 1px; background: rgba(28,43,74,0.1); }
+
+.item { display: flex; align-items: center; gap: 14px; padding: 13px 14px; border-radius: 10px; margin-bottom: 4px; cursor: pointer; background: white; border: 1.5px solid rgba(28,43,74,0.1); user-select: none; transition: all 0.1s; }
+.item.done { background: rgba(28,43,74,0.06); border-color: #1C2B4A; }
+.box { width: 22px; height: 22px; border-radius: 5px; border: 2px solid rgba(28,43,74,0.2); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.1s; }
+.item.done .box { background: #1C2B4A; border-color: #1C2B4A; }
+.tick { display: none; }
+.item.done .tick { display: block; }
+.item-text { font-size: 13.5px; line-height: 1.4; transition: all 0.1s; }
+.item.done .item-text { color: rgba(28,43,74,0.35); text-decoration: line-through; }
+.cal-note { font-family: monospace; font-size: 9px; color: #E8472A; margin-top: 2px; display: block; }
+
+.cal-popup { display: none; margin-bottom: 14px; padding: 14px 16px; background: white; border: 2px solid #1C2B4A; border-radius: 12px; }
+.cal-popup.show { display: block; }
+.cal-popup .lbl { font-family: 'Arial Black', sans-serif; font-size: 9px; letter-spacing: 0.2em; color: #1C2B4A; margin-bottom: 10px; }
+.cal-popup .row { display: flex; gap: 8px; }
+.cal-popup input { flex: 1; border: 2px solid #1C2B4A; border-radius: 8px; padding: 9px 14px; font-family: 'Arial Black', sans-serif; font-size: 16px; color: #1C2B4A; background: #F0EBE1; outline: none; }
+.btn-navy { padding: 9px 18px; border: none; border-radius: 8px; font-family: 'Arial Black', sans-serif; font-size: 10px; letter-spacing: 0.1em; cursor: pointer; background: #1C2B4A; color: #F0EBE1; }
+.btn-ghost { padding: 9px 14px; border: 1.5px solid rgba(28,43,74,0.2); border-radius: 8px; font-family: 'Arial Black', sans-serif; font-size: 10px; cursor: pointer; background: transparent; color: rgba(28,43,74,0.4); }
+
+.score-bar { margin-top: 22px; padding: 18px 20px; background: #1C2B4A; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; }
+.reward-lbl { font-family: 'Arial Black', sans-serif; font-size: 9px; letter-spacing: 0.2em; color: rgba(240,235,225,0.4); margin-bottom: 5px; }
+.reward-txt { font-style: italic; font-size: 13px; color: #F0EBE1; }
+.circle { width: 64px; height: 64px; border-radius: 50%; background: rgba(232,71,42,0.15); display: flex; align-items: center; justify-content: center; transition: background 0.3s; flex-shrink: 0; }
+.circle.full { background: #E8472A; }
+.circle-num { font-family: 'Arial Black', sans-serif; font-size: 22px; color: #E8472A; line-height: 1; }
+.circle.full .circle-num { color: #F0EBE1; }
+.circle-den { font-size: 12px; }
+.reset { display: block; width: 100%; margin-top: 10px; padding: 11px; background: transparent; border: 1.5px solid rgba(28,43,74,0.15); border-radius: 10px; font-family: 'Arial Black', sans-serif; font-size: 9px; letter-spacing: 0.2em; color: rgba(28,43,74,0.35); cursor: pointer; }
+
+/* BIG PICTURE */
+.conviction { background: #1C2B4A; border-radius: 16px; padding: 22px; margin-bottom: 20px; position: relative; overflow: hidden; }
+.conviction-ghost { position: absolute; top: -10px; right: 12px; font-family: 'Arial Black', sans-serif; font-size: 120px; color: rgba(255,255,255,0.04); line-height: 1; user-select: none; pointer-events: none; }
+.conviction-tag { font-family: 'Arial Black', sans-serif; font-size: 9px; letter-spacing: 0.25em; color: #E8472A; margin-bottom: 16px; }
+.goals { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.goal { display: flex; align-items: center; gap: 10px; }
+.goal-dot { width: 28px; height: 28px; border-radius: 50%; background: #E8472A; flex-shrink: 0; }
+.goal-n { font-family: 'Arial Black', sans-serif; font-size: 13px; color: #F0EBE1; }
+.goal-s { font-family: monospace; font-size: 9px; color: rgba(240,235,225,0.35); }
+.mantra-row { border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px; display: flex; justify-content: space-between; align-items: center; }
+.arabic { font-family: Georgia, serif; font-size: 15px; color: rgba(232,71,42,0.85); }
+.mantra-t { font-family: Georgia, serif; font-size: 11px; color: rgba(240,235,225,0.3); font-style: italic; }
+
+.counters { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+.ctr { background: white; border: 2px solid #1C2B4A; border-radius: 14px; padding: 14px 10px; text-align: center; }
+.ctr-n { font-family: 'Arial Black', sans-serif; font-size: 34px; color: #E8472A; line-height: 1; }
+.ctr-l { font-family: monospace; font-size: 8.5px; color: rgba(28,43,74,0.4); margin-top: 4px; line-height: 1.3; }
+
+.card { background: white; border: 1.5px solid rgba(28,43,74,0.1); border-radius: 14px; padding: 18px; margin-bottom: 4px; }
+.card-lbl { font-family: monospace; font-size: 9px; letter-spacing: 0.15em; color: rgba(28,43,74,0.4); margin-bottom: 14px; }
+
+.ph-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 10px; }
+.ph-bar { height: 6px; border-radius: 3px; background: rgba(28,43,74,0.1); margin-bottom: 5px; overflow: hidden; }
+.ph-fill { height: 100%; border-radius: 3px; transition: width 0.4s; }
+.ph-name { font-family: 'Arial Black', sans-serif; font-size: 8px; letter-spacing: 0.08em; }
+
+.weight-disp { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; }
+.wn { font-family: 'Arial Black', sans-serif; font-size: 50px; color: #1C2B4A; line-height: 1; }
+.wa { font-family: 'Arial Black', sans-serif; font-size: 20px; color: #E8472A; }
+.wt { font-family: 'Arial Black', sans-serif; font-size: 28px; color: rgba(28,43,74,0.3); }
+.wg { font-family: monospace; font-size: 10px; color: rgba(28,43,74,0.4); }
+.pbar { background: #F0EBE1; border-radius: 4px; height: 8px; margin-bottom: 14px; }
+.pfill { background: #E8472A; height: 8px; border-radius: 4px; transition: width 0.5s; }
+.inp-row { display: flex; gap: 8px; }
+.inp-row input { flex: 1; border: 2px solid #1C2B4A; border-radius: 8px; padding: 9px 14px; font-family: 'Arial Black', sans-serif; font-size: 14px; color: #1C2B4A; background: #F0EBE1; outline: none; }
+
+.cfa-item { margin-bottom: 12px; }
+.cfa-hdr { display: flex; justify-content: space-between; margin-bottom: 5px; }
+.cfa-name { font-family: monospace; font-size: 10px; }
+.cfa-pct { font-family: 'Arial Black', sans-serif; font-size: 10px; }
+.cfa-bar { background: #F0EBE1; border-radius: 3px; height: 5px; }
+.cfa-fill { height: 5px; border-radius: 3px; transition: width 0.4s; }
+.slider-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.slider-row input { flex: 1; accent-color: #E8472A; }
+.sv { font-family: 'Arial Black', sans-serif; font-size: 12px; color: #E8472A; width: 34px; text-align: right; }
+
+.dl { display: flex; align-items: center; gap: 14px; padding: 11px 0; border-bottom: 1px solid rgba(28,43,74,0.08); }
+.dl:last-child { border-bottom: none; }
+.dl-badge { width: 46px; height: 46px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px solid; }
+.dl-days { font-family: 'Arial Black', sans-serif; font-size: 15px; line-height: 1; }
+.dl-lbl { font-family: monospace; font-size: 7px; opacity: 0.7; }
+.dl-name { font-family: 'Arial Black', sans-serif; font-size: 12px; color: #1C2B4A; }
+.dl-sub { font-family: monospace; font-size: 10px; color: rgba(28,43,74,0.4); margin-top: 2px; }
+.urgent { margin-left: auto; font-family: 'Arial Black', sans-serif; font-size: 8px; color: #E8472A; letter-spacing: 0.15em; flex-shrink: 0; }
 </style>
 </head>
 <body>
-<div id="root"></div>
-<script type="text/babel">
-const { useState, useEffect } = React;
 
-const BIRTHDAY = new Date(“2026-07-20”);
-const PHASES = [
-{ num: 1, name: “FOUNDATION”, range: “Apr 13 – May 4”, start: new Date(“2026-04-13”), end: new Date(“2026-05-04”), weightTarget: 126, tagline: “Build the floor. No heroics.”, cfaTopic: “Ethics & Professional Standards” },
-{ num: 2, name: “BUILD”, range: “May 5 – May 25”, start: new Date(“2026-05-05”), end: new Date(“2026-05-25”), weightTarget: 122, tagline: “Habits locked. Raise the intensity.”, cfaTopic: “Quantitative Methods” },
-{ num: 3, name: “PUSH”, range: “May 26 – Jun 15”, start: new Date(“2026-05-26”), end: new Date(“2026-06-15”), weightTarget: 119, tagline: “This is where most people stop. You don’t.”, cfaTopic: “Fixed Income” },
-{ num: 4, name: “FINISH”, range: “Jun 16 – Jul 20”, start: new Date(“2026-06-16”), end: new Date(“2026-07-20”), weightTarget: 116, tagline: “Lock in who you’ve become.”, cfaTopic: “Portfolio Management” },
-];
-const DEADLINES = [
-{ date: “2026-05-04”, label: “Phase 1 ends”, sub: “Target 126 kg”, type: “phase” },
-{ date: “2026-05-11”, label: “MSc Assignments due”, sub: “Both submissions”, type: “deadline” },
-{ date: “2026-05-25”, label: “Phase 2 ends”, sub: “Target 122 kg”, type: “phase” },
-{ date: “2026-06-15”, label: “Phase 3 ends”, sub: “Target 119 kg”, type: “phase” },
-{ date: “2026-07-20”, label: “Birthday”, sub: “116 kg · Paper submitted · CFA 35%”, type: “birthday” },
-];
-const HABITS = [
-{ id: “calories”, section: “BODY”, hasCalInput: true, floor: { label: “Calories under 1800 kcal”, mins: 0 }, push: { label: “Calories under 1600 kcal”, mins: 0 } },
-{ id: “protein”, section: “BODY”, floor: { label: “Hit 180g protein”, mins: 0 }, push: { label: “Hit 200g+ protein”, mins: 0 } },
-{ id: “movement”, section: “BODY”, floor: { label: “20 min movement — walk, bike, anything”, mins: 20 }, push: { label: “Full training session — gym or run”, mins: 60 } },
-{ id: “prayers”, section: “BODY”, floor: { label: “Prayed all 5”, mins: 0 }, push: { label: “Prayed all 5 on time”, mins: 0 } },
-{ id: “cfa”, section: “MIND”, floor: { label: “30 min CFA — one reading or quiz”, mins: 30 }, push: { label: “60 min CFA — full reading + Obsidian notes”, mins: 60 } },
-{ id: “masters”, section: “MIND”, floor: { label: “30 min Masters — any assignment work”, mins: 30 }, push: { label: “90 min Masters — deep assignment session”, mins: 90 } },
-{ id: “paper”, section: “MIND”, floor: { label: “10 min Paper — one action, anything”, mins: 10 }, push: { label: “30 min Paper — writing or revision”, mins: 30 } },
-];
-const C = { navy:”#1C2B4A”, cream:”#F0EBE1”, red:”#E8472A”, white:”#FFFFFF”, muted:“rgba(28,43,74,0.38)”, dim:“rgba(28,43,74,0.1)”, dimMid:“rgba(28,43,74,0.18)” };
+<header>
+  <div class="logo">AHMED<span>.</span></div>
+  <div class="header-right">
+    <span id="hphase"></span>
+    <div class="reddot"></div>
+    <span id="hdays"></span>
+  </div>
+</header>
 
-function daysUntil(date) { return Math.ceil((new Date(date) - new Date()) / 86400000); }
-function toRFC3339Dubai(date) { const pad = n => String(n).padStart(2,“0”); return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}+04:00`; }
-function todayStr() { const pad = n => String(n).padStart(2,“0”); const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
-function tomorrowStr() { const d = new Date(); d.setDate(d.getDate()+1); const pad = n => String(n).padStart(2,“0”); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
-function getCurrentPhase() { const now = new Date(); for (const p of PHASES) { if (now >= p.start && now <= p.end) return p; } return PHASES[3]; }
+<nav>
+  <button class="on" onclick="go('today',this)">Today</button>
+  <button onclick="go('big',this)">Big Picture</button>
+</nav>
 
-async function logToGCal(habitId, mins, mode, cfaTopic, calorieVal) {
-return { ok: true, title: habitId };
-}
+<!-- TODAY PAGE -->
+<div class="page on" id="today">
 
-function Tab({ label, active, onClick }) {
-return <button onClick={onClick} style={{ padding:“14px 32px”, border:“none”, cursor:“pointer”, fontFamily:”‘Arial Black’,sans-serif”, fontSize:11, letterSpacing:“0.2em”, textTransform:“uppercase”, background:active?C.navy:“transparent”, color:active?C.cream:C.muted, borderBottom:active?`3px solid ${C.red}`:“3px solid transparent”, transition:“all 0.15s” }}>{label}</button>;
-}
+  <div class="banner">
+    <div class="banner-left">
+      <div class="tag" id="b-phase"></div>
+      <div class="tagline" id="b-tagline"></div>
+    </div>
+    <div class="banner-right">
+      <div class="big" id="b-days"></div>
+      <div class="small">DAYS LEFT</div>
+    </div>
+  </div>
 
-function Divider({ label }) {
-return <div style={{ display:“flex”, alignItems:“center”, gap:12, margin:“22px 0 14px” }}><div style={{ fontFamily:”‘Arial Black’,sans-serif”, fontSize:9, letterSpacing:“0.25em”, color:C.muted }}>{label}</div><div style={{ flex:1, height:1, background:C.dim }} /></div>;
-}
+  <div class="mode-row">
+    <div class="mode-text">
+      <div class="lbl">TODAY'S MODE</div>
+      <div class="sub" id="mode-sub"></div>
+    </div>
+    <div class="toggle">
+      <button class="on" id="fl" onclick="setMode('floor')">Floor</button>
+      <button id="pu" onclick="setMode('push')">Push</button>
+    </div>
+  </div>
 
-function HabitRow({ label, subLabel, done, loading, gcalStatus, onTick }) {
-return (
-<div onClick={!loading?onTick:undefined} style={{ display:“flex”, alignItems:“center”, gap:14, padding:“12px 14px”, borderRadius:10, cursor:loading?“default”:“pointer”, marginBottom:4, background:done?“rgba(28,43,74,0.06)”:C.white, border:`1.5px solid ${done?C.navy:C.dim}`, transition:“all 0.12s”, opacity:loading?0.75:1 }}>
-<div style={{ width:20, height:20, borderRadius:4, flexShrink:0, border:`2px solid ${done?C.navy:loading?C.red:C.dimMid}`, background:done?C.navy:“transparent”, display:“flex”, alignItems:“center”, justifyContent:“center”, transition:“all 0.12s” }}>
-{loading && !done && <div style={{ width:8, height:8, border:`2px solid ${C.red}`, borderTopColor:“transparent”, borderRadius:“50%”, animation:“spin 0.7s linear infinite” }} />}
-{done && !loading && <svg width="10" height="8" viewBox="0 0 10 8"><path d="M1 4l3 3 5-6" stroke={C.cream} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-</div>
-<div style={{ flex:1 }}>
-<div style={{ fontFamily:“Georgia,serif”, fontSize:13, color:done?C.muted:C.navy, textDecoration:done?“line-through”:“none”, lineHeight:1.4 }}>{label}</div>
-{subLabel && <div style={{ fontFamily:“monospace”, fontSize:9, color:C.red, marginTop:2 }}>{subLabel}</div>}
-{loading && <div style={{ fontFamily:“monospace”, fontSize:9, color:C.red, marginTop:2 }}>logging to calendar…</div>}
-{!loading && gcalStatus===“logged” && <div style={{ fontFamily:“monospace”, fontSize:9, color:”#2E7D4F”, marginTop:2 }}>logged ✓</div>}
-{!loading && gcalStatus && gcalStatus!==“logged” && <div style={{ fontFamily:“monospace”, fontSize:9, color:C.red, marginTop:2 }}>error: {gcalStatus}</div>}
-</div>
-</div>
-);
-}
+  <div class="cal-popup" id="cal-popup">
+    <div class="lbl">HOW MANY KCAL TODAY?</div>
+    <div class="row">
+      <input type="number" id="cal-in" placeholder="e.g. 1650" onkeydown="if(event.key==='Enter')logCal()">
+      <button class="btn-navy" onclick="logCal()">LOG</button>
+      <button class="btn-ghost" onclick="closeCal()">✕</button>
+    </div>
+  </div>
 
-function TodayTab({ phase }) {
-const [mode, setMode] = useState(“floor”);
-const [ticked, setTicked] = useState({});
-const [loading, setLoading] = useState({});
-const [gcalStatus, setGcalStatus] = useState({});
-const [calInput, setCalInput] = useState(””);
-const [showCalInput, setShowCalInput] = useState(false);
+  <div class="section-title"><span>BODY</span></div>
+  <div id="body-list"></div>
 
-const score = Object.values(ticked).filter(Boolean).length;
-const total = HABITS.length;
-const phaseDaysLeft = Math.max(0, Math.ceil((phase.end - new Date()) / 86400000));
-const reward = score===total ? “Gaming if friends on · Social media 1hr” : score>=5 ? “Social media 30 min” : “Phone away after Isha”;
+  <div class="section-title"><span>MIND</span></div>
+  <div id="mind-list"></div>
 
-const fire = async (habit, cal) => {
-const item = mode===“floor” ? habit.floor : habit.push;
-setTicked(p => ({ …p, [habit.id]: true }));
-setLoading(p => ({ …p, [habit.id]: true }));
-const result = await logToGCal(habit.id, item.mins, mode, phase.cfaTopic, cal||null);
-setLoading(p => ({ …p, [habit.id]: false }));
-setGcalStatus(p => ({ …p, [habit.id]: result.ok?“logged”:result.error }));
-};
-
-const handleTick = (habit) => {
-if (ticked[habit.id]) { setTicked(p => ({ …p, [habit.id]:false })); setGcalStatus(p => ({ …p, [habit.id]:null })); return; }
-if (habit.hasCalInput) { setShowCalInput(true); return; }
-fire(habit);
-};
-
-const handleCalSubmit = () => {
-if (!calInput) return;
-const habit = HABITS.find(h => h.id===“calories”);
-setShowCalInput(false);
-fire(habit, calInput);
-};
-
-return (
-<div style={{ padding:“24px 20px”, maxWidth:580, margin:“0 auto” }}>
-<div style={{ display:“flex”, alignItems:“center”, justifyContent:“space-between”, marginBottom:24, padding:“16px 20px”, background:C.navy, borderRadius:14 }}>
-<div>
-<div style={{ fontFamily:”‘Arial Black’,sans-serif”, fontSize:9, letterSpacing:“0.2em”, color:C.red, marginBottom:4 }}>PHASE {phase.num} · {phase.name}</div>
-<div style={{ fontFamily:“Georgia,serif”, fontSize:13, color:C.cream, fontStyle:“italic” }}>{phase.tagline}</div>
-</div>
-<div style={{ textAlign:“right” }}>
-<div style={{ fontFamily:”‘Arial Black’,sans-serif”, fontSize:38, color:C.red, lineHeight:1 }}>{phaseDaysLeft}</div>
-<div style={{ fontFamily:”‘Arial Black’,sans-serif”, fontSize:8, letterSpacing:“0.15em”, color:“rgba(240,235,225,0.4)”, marginTop:2 }}>DAYS LEFT</div>
-</div>
-</div>
-
-```
-  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
+  <div class="score-bar">
     <div>
-      <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:9, letterSpacing:"0.2em", color:C.muted, marginBottom:3 }}>TODAY'S MODE</div>
-      <div style={{ fontFamily:"Georgia,serif", fontSize:12, color:C.navy, fontStyle:"italic" }}>{mode==="floor"?"Bare minimum that gets you there":"Feeling good — go harder"}</div>
+      <div class="reward-lbl">TODAY'S REWARD</div>
+      <div class="reward-txt" id="reward"></div>
     </div>
-    <div style={{ display:"flex", border:`2px solid ${C.navy}`, borderRadius:8, overflow:"hidden" }}>
-      {[["floor","Floor"],["push","Push"]].map(([val,lbl]) => (
-        <button key={val} onClick={() => setMode(val)} style={{ padding:"9px 20px", border:"none", cursor:"pointer", fontFamily:"'Arial Black',sans-serif", fontSize:10, letterSpacing:"0.1em", background:mode===val?C.navy:"transparent", color:mode===val?C.cream:C.navy, transition:"all 0.15s" }}>{lbl}</button>
-      ))}
+    <div class="circle" id="circle">
+      <div class="circle-num" id="score"></div>
     </div>
   </div>
 
-  {showCalInput && (
-    <div style={{ marginBottom:16, padding:"14px 16px", background:C.white, border:`2px solid ${C.navy}`, borderRadius:12 }}>
-      <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:9, letterSpacing:"0.2em", color:C.navy, marginBottom:10 }}>HOW MANY KCAL TODAY?</div>
-      <div style={{ display:"flex", gap:8 }}>
-        <input autoFocus type="number" value={calInput} onChange={e => setCalInput(e.target.value)} onKeyDown={e => e.key==="Enter" && calInput && handleCalSubmit()} placeholder="e.g. 1650"
-          style={{ flex:1, border:`2px solid ${C.navy}`, borderRadius:8, padding:"9px 14px", fontFamily:"'Arial Black',sans-serif", fontSize:16, color:C.navy, background:C.cream, outline:"none" }} />
-        <button onClick={handleCalSubmit} disabled={!calInput} style={{ background:calInput?C.navy:C.dim, color:C.cream, border:"none", borderRadius:8, padding:"9px 18px", fontFamily:"'Arial Black',sans-serif", fontSize:10, cursor:calInput?"pointer":"default", letterSpacing:"0.1em" }}>LOG</button>
-        <button onClick={() => setShowCalInput(false)} style={{ background:"transparent", color:C.muted, border:`1.5px solid ${C.dim}`, borderRadius:8, padding:"9px 14px", fontFamily:"'Arial Black',sans-serif", fontSize:10, cursor:"pointer" }}>✕</button>
-      </div>
-    </div>
-  )}
-
-  <Divider label="BODY" />
-  {HABITS.filter(h => h.section==="BODY").map(habit => (
-    <HabitRow key={habit.id} label={(mode==="floor"?habit.floor:habit.push).label}
-      subLabel={habit.id==="calories" && ticked["calories"] && calInput ? `${calInput} kcal logged` : null}
-      done={!!ticked[habit.id]} loading={!!loading[habit.id]} gcalStatus={gcalStatus[habit.id]} onTick={() => handleTick(habit)} />
-  ))}
-
-  <Divider label="MIND" />
-  {HABITS.filter(h => h.section==="MIND").map(habit => (
-    <HabitRow key={habit.id} label={(mode==="floor"?habit.floor:habit.push).label}
-      done={!!ticked[habit.id]} loading={!!loading[habit.id]} gcalStatus={gcalStatus[habit.id]} onTick={() => handleTick(habit)} />
-  ))}
-
-  <div style={{ marginTop:24, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"18px 22px", background:C.navy, borderRadius:14 }}>
-    <div>
-      <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:9, letterSpacing:"0.2em", color:"rgba(240,235,225,0.4)", marginBottom:4 }}>TODAY'S REWARD</div>
-      <div style={{ fontFamily:"Georgia,serif", fontSize:13, color:C.cream }}>{reward}</div>
-    </div>
-    <div style={{ width:64, height:64, borderRadius:"50%", background:score===total?C.red:"rgba(232,71,42,0.15)", display:"flex", alignItems:"center", justifyContent:"center", transition:"background 0.3s" }}>
-      <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:20, color:score===total?C.cream:C.red, lineHeight:1 }}>{score}<span style={{ fontSize:11 }}>/{total}</span></div>
-    </div>
-  </div>
+  <button class="reset" onclick="resetDay()">RESET DAY</button>
 </div>
-```
 
-);
+<!-- BIG PICTURE PAGE -->
+<div class="page" id="big">
+
+  <div class="conviction">
+    <div class="conviction-ghost">24</div>
+    <div class="conviction-tag">JULY 20 · YOU TURN 24 · WHO ARE YOU?</div>
+    <div class="goals">
+      <div class="goal"><div class="goal-dot"></div><div><div class="goal-n">116 kg</div><div class="goal-s">on the scale</div></div></div>
+      <div class="goal"><div class="goal-dot"></div><div><div class="goal-n">CFA 35%</div><div class="goal-s">completed</div></div></div>
+      <div class="goal"><div class="goal-dot"></div><div><div class="goal-n">Published</div><div class="goal-s">researcher</div></div></div>
+      <div class="goal"><div class="goal-dot"></div><div><div class="goal-n">1st Class</div><div class="goal-s">all assignments</div></div></div>
+    </div>
+    <div class="mantra-row">
+      <div class="arabic">وَعَلَى اللَّهِ فَتَوَكَّلُوا</div>
+      <div class="mantra-t">Plan fully · Trust Allah</div>
+    </div>
+  </div>
+
+  <div class="counters">
+    <div class="ctr"><div class="ctr-n" id="c1"></div><div class="ctr-l">days to birthday</div></div>
+    <div class="ctr"><div class="ctr-n" id="c2"></div><div class="ctr-l" id="c2l"></div></div>
+    <div class="ctr"><div class="ctr-n" id="c3"></div><div class="ctr-l">days to May 11</div></div>
+  </div>
+
+  <div class="section-title"><span>PHASES</span></div>
+  <div class="card">
+    <div class="ph-grid" id="ph-grid"></div>
+    <div style="font-family:Georgia,serif;font-size:12px;font-style:italic" id="ph-note"></div>
+  </div>
+
+  <div class="section-title"><span>WEIGHT</span></div>
+  <div class="card">
+    <div class="weight-disp">
+      <div class="wn" id="w-show">131.7</div>
+      <div class="wa">→</div>
+      <div class="wt">116</div>
+      <div class="wg" id="w-gap"></div>
+    </div>
+    <div class="pbar"><div class="pfill" id="w-pbar" style="width:0%"></div></div>
+    <div class="inp-row">
+      <input type="number" step="0.1" id="w-in" placeholder="Monday weight">
+      <button class="btn-navy" onclick="saveW()">SAVE</button>
+    </div>
+  </div>
+
+  <div class="section-title"><span>CFA PROGRESS</span></div>
+  <div class="card">
+    <div class="card-lbl">TARGET 35% BY JUL 20</div>
+    <div id="cfa-list"></div>
+    <div class="slider-row">
+      <input type="range" min="0" max="100" id="cfa-sl" oninput="setCfa(this.value)">
+      <div class="sv" id="cfa-v">0%</div>
+    </div>
+  </div>
+
+  <div class="section-title"><span>DEADLINES</span></div>
+  <div class="card" id="dl-list"></div>
+
+</div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+const BD = new Date("2026-07-20");
+const PH = [
+  {n:1,name:"FOUNDATION",s:new Date("2026-04-13"),e:new Date("2026-05-04"),wt:126,tl:"Build the floor. No heroics.",cfa:"Ethics & Professional Standards"},
+  {n:2,name:"BUILD",s:new Date("2026-05-05"),e:new Date("2026-05-25"),wt:122,tl:"Habits locked. Raise the intensity.",cfa:"Quantitative Methods"},
+  {n:3,name:"PUSH",s:new Date("2026-05-26"),e:new Date("2026-06-15"),wt:119,tl:"This is where most people stop. You don't.",cfa:"Fixed Income"},
+  {n:4,name:"FINISH",s:new Date("2026-06-16"),e:new Date("2026-07-20"),wt:116,tl:"Lock in who you've become.",cfa:"Portfolio Management"},
+];
+const DL = [
+  {d:"2026-05-04",n:"Phase 1 ends",s:"Target 126 kg",t:"phase"},
+  {d:"2026-05-11",n:"MSc Assignments due",s:"Both submissions",t:"deadline"},
+  {d:"2026-05-25",n:"Phase 2 ends",s:"Target 122 kg",t:"phase"},
+  {d:"2026-06-15",n:"Phase 3 ends",s:"Target 119 kg",t:"phase"},
+  {d:"2026-07-20",n:"Birthday",s:"116 kg · Paper submitted · CFA 35%",t:"birthday"},
+];
+const HB = [
+  {id:"cal",  g:"BODY", fl:"Calories under 1800 kcal",  pu:"Calories under 1600 kcal"},
+  {id:"pro",  g:"BODY", fl:"Hit 180g protein",           pu:"Hit 200g+ protein"},
+  {id:"mov",  g:"BODY", fl:"20 min movement — walk, bike, anything", pu:"Full training session — gym or run"},
+  {id:"pray", g:"BODY", fl:"Prayed all 5",               pu:"Prayed all 5 on time"},
+  {id:"cfa",  g:"MIND", fl:"30 min CFA — one reading or quiz", pu:"60 min CFA — full reading + Obsidian notes"},
+  {id:"mst",  g:"MIND", fl:"30 min Masters — any assignment work", pu:"90 min Masters — deep assignment session"},
+  {id:"ppr",  g:"MIND", fl:"10 min Paper — one action, anything", pu:"30 min Paper — writing or revision"},
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+const dk = () => { const d=new Date(); return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; };
+const du = d => Math.max(0, Math.ceil((new Date(d) - new Date()) / 86400000));
+const gp = () => { const n=new Date(); for(const p of PH) if(n>=p.s&&n<=p.e) return p; return PH[3]; };
+
+let mode = "floor";
+let ticked = JSON.parse(localStorage.getItem("tk_"+dk()) || "{}");
+let calVal = localStorage.getItem("kc_"+dk()) || "";
+let sw = parseFloat(localStorage.getItem("sw") || "131.7");
+let cfp = parseInt(localStorage.getItem("cfp") || "0");
+
+// ── NAV ───────────────────────────────────────────────────────────────────────
+function go(id, btn) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("on"));
+  document.querySelectorAll("nav button").forEach(b => b.classList.remove("on"));
+  document.getElementById(id).classList.add("on");
+  btn.classList.add("on");
 }
 
-function BigPictureTab({ phase }) {
-const [weight, setWeight] = useState(() => localStorage.getItem(“weight”) || “131.7”);
-const [savedWeight, setSavedWeight] = useState(() => parseFloat(localStorage.getItem(“savedWeight”)) || 131.7);
-const [cfaPct, setCfaPct] = useState(() => parseInt(localStorage.getItem(“cfaPct”)) || 0);
+// ── MODE ──────────────────────────────────────────────────────────────────────
+function setMode(m) {
+  mode = m;
+  document.getElementById("fl").classList.toggle("on", m==="floor");
+  document.getElementById("pu").classList.toggle("on", m==="push");
+  document.getElementById("mode-sub").textContent = m==="floor" ? "Bare minimum that gets you there" : "Feeling good — go harder";
+  drawHabits();
+}
 
-const totalLoss = (savedWeight - 116).toFixed(1);
-const weightPct = Math.max(0, Math.min(100, Math.round(((131.7 - savedWeight) / (131.7 - 116)) * 100)));
-const phaseDaysLeft = Math.max(0, Math.ceil((phase.end - new Date()) / 86400000));
-const phaseTotalDays = Math.ceil((phase.end - phase.start) / 86400000);
-const phasePct = Math.round(((phaseTotalDays - phaseDaysLeft) / phaseTotalDays) * 100);
-
-const saveWeight = () => {
-const val = parseFloat(weight) || savedWeight;
-setSavedWeight(val);
-localStorage.setItem(“savedWeight”, val);
-localStorage.setItem(“weight”, weight);
-};
-
-const saveCfa = (val) => {
-setCfaPct(val);
-localStorage.setItem(“cfaPct”, val);
-};
-
-return (
-<div style={{ padding:“24px 20px”, maxWidth:580, margin:“0 auto” }}>
-<div style={{ background:C.navy, borderRadius:16, padding:“24px”, marginBottom:20, position:“relative”, overflow:“hidden” }}>
-<div style={{ position:“absolute”, top:-10, right:16, fontFamily:”‘Arial Black’,sans-serif”, fontSize:130, color:“rgba(255,255,255,0.04)”, lineHeight:1, userSelect:“none” }}>24</div>
-<div style={{ fontFamily:”‘Arial Black’,sans-serif”, fontSize:9, letterSpacing:“0.25em”, color:C.red, marginBottom:14 }}>JULY 20 · YOU TURN 24 · WHO ARE YOU?</div>
-<div style={{ display:“grid”, gridTemplateColumns:“1fr 1fr”, gap:14, marginBottom:18 }}>
-{[[“116 kg”,“on the scale”],[“CFA 35%”,“completed”],[“Published”,“researcher”],[“1st Class”,“all assignments”]].map(([n,l]) => (
-<div key={n} style={{ display:“flex”, alignItems:“center”, gap:10 }}>
-<div style={{ width:32, height:32, borderRadius:“50%”, background:C.red, flexShrink:0 }} />
-<div>
-<div style={{ fontFamily:”‘Arial Black’,sans-serif”, fontSize:13, color:C.cream }}>{n}</div>
-<div style={{ fontFamily:“monospace”, fontSize:9, color:“rgba(240,235,225,0.35)”, letterSpacing:“0.08em” }}>{l}</div>
-</div>
-</div>
-))}
-</div>
-<div style={{ borderTop:“1px solid rgba(255,255,255,0.08)”, paddingTop:14, display:“flex”, justifyContent:“space-between”, alignItems:“center” }}>
-<div style={{ fontFamily:“Georgia,serif”, fontSize:16, color:“rgba(232,71,42,0.85)” }}>وَعَلَى اللَّهِ فَتَوَكَّلُوا</div>
-<div style={{ fontFamily:“Georgia,serif”, fontSize:11, color:“rgba(240,235,225,0.3)”, fontStyle:“italic” }}>Plan fully · Trust Allah</div>
-</div>
-</div>
-
-```
-  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10, marginBottom:6 }}>
-    {[[daysUntil(BIRTHDAY),"days to birthday"],[phaseDaysLeft,`days in phase ${phase.num}`],[daysUntil(new Date("2026-05-11")),"days to May 11"]].map(([n,l]) => (
-      <div key={l} style={{ background:C.white, border:`2px solid ${C.navy}`, borderRadius:14, padding:"16px 14px", textAlign:"center" }}>
-        <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:36, color:C.red, lineHeight:1 }}>{n}</div>
-        <div style={{ fontFamily:"monospace", fontSize:9, color:C.muted, letterSpacing:"0.08em", marginTop:4 }}>{l}</div>
-      </div>
-    ))}
-  </div>
-
-  <Divider label="PHASES" />
-  <div style={{ background:C.white, border:`1.5px solid ${C.dim}`, borderRadius:14, padding:"18px", marginBottom:4 }}>
-    <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8, marginBottom:12 }}>
-      {PHASES.map(p => {
-        const done = p.num < phase.num; const active = p.num === phase.num;
-        return (
-          <div key={p.num}>
-            <div style={{ height:6, borderRadius:3, background:C.dim, marginBottom:5, overflow:"hidden" }}>
-              <div style={{ height:"100%", borderRadius:3, transition:"width 0.4s", background:done?C.navy:active?C.red:"transparent", width:done?"100%":active?`${phasePct}%`:"0%" }} />
-            </div>
-            <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:8, letterSpacing:"0.1em", color:active?C.red:done?C.navy:C.muted }}>P{p.num} {p.name.slice(0,5)}</div>
-          </div>
-        );
-      })}
-    </div>
-    <div style={{ fontFamily:"Georgia,serif", fontSize:12, color:C.navy, fontStyle:"italic" }}>
-      Now: <strong style={{ fontStyle:"normal", color:C.red }}>{phase.cfaTopic}</strong> · target <strong style={{ fontStyle:"normal" }}>{phase.weightTarget} kg</strong>
-    </div>
-  </div>
-
-  <Divider label="WEIGHT" />
-  <div style={{ background:C.white, border:`1.5px solid ${C.dim}`, borderRadius:14, padding:"18px", marginBottom:4 }}>
-    <div style={{ display:"flex", alignItems:"baseline", gap:10, marginBottom:12 }}>
-      <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:52, color:C.navy, lineHeight:1 }}>{savedWeight}</div>
-      <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:20, color:C.red }}>→</div>
-      <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:32, color:C.muted }}>116</div>
-      <div style={{ fontFamily:"monospace", fontSize:10, color:C.muted, marginLeft:4 }}>{totalLoss} kg to go</div>
-    </div>
-    <div style={{ background:C.cream, borderRadius:4, height:8, marginBottom:14 }}>
-      <div style={{ background:C.red, height:8, borderRadius:4, width:`${weightPct}%`, transition:"width 0.5s" }} />
-    </div>
-    <div style={{ display:"flex", gap:8 }}>
-      <input value={weight} onChange={e => setWeight(e.target.value)} type="number" step="0.1"
-        style={{ flex:1, border:`2px solid ${C.navy}`, borderRadius:8, padding:"9px 14px", fontFamily:"'Arial Black',sans-serif", fontSize:14, color:C.navy, background:C.cream, outline:"none" }} />
-      <button onClick={saveWeight} style={{ background:C.navy, color:C.cream, border:"none", borderRadius:8, padding:"9px 20px", fontFamily:"'Arial Black',sans-serif", fontSize:10, cursor:"pointer", letterSpacing:"0.1em" }}>SAVE</button>
-    </div>
-  </div>
-
-  <Divider label="CFA PROGRESS" />
-  <div style={{ background:C.white, border:`1.5px solid ${C.dim}`, borderRadius:14, padding:"18px", marginBottom:4 }}>
-    <div style={{ fontFamily:"monospace", fontSize:9, color:C.muted, letterSpacing:"0.12em", marginBottom:14 }}>TARGET 35% BY JUL 20</div>
-    {[{topic:"Ethics & Professional Standards",p:1},{topic:"Quantitative Methods",p:2},{topic:"Fixed Income",p:3},{topic:"Portfolio Management",p:4}].map(t => {
-      const isActive = t.p===phase.num; const isDone = t.p<phase.num;
-      return (
-        <div key={t.topic} style={{ marginBottom:12 }}>
-          <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
-            <div style={{ fontFamily:"monospace", fontSize:10, color:isDone?"#2E7D4F":isActive?C.navy:C.muted }}>{isDone?"✓ ":isActive?"→ ":""}{t.topic}</div>
-            <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:10, color:isActive?C.red:isDone?"#2E7D4F":C.muted }}>{isDone?"100%":isActive?`${cfaPct}%`:"—"}</div>
-          </div>
-          <div style={{ background:C.cream, borderRadius:3, height:5 }}>
-            <div style={{ background:isDone?"#2E7D4F":isActive?C.red:"transparent", height:5, borderRadius:3, width:isDone?"100%":isActive?`${cfaPct}%`:"0%", transition:"width 0.4s" }} />
-          </div>
+// ── HABITS ────────────────────────────────────────────────────────────────────
+function drawHabits() {
+  ["BODY","MIND"].forEach(sec => {
+    const el = document.getElementById(sec.toLowerCase()+"-list");
+    el.innerHTML = "";
+    HB.filter(h => h.g===sec).forEach(h => {
+      const done = !!ticked[h.id];
+      const label = mode==="floor" ? h.fl : h.pu;
+      const sub = h.id==="cal" && done && calVal ? calVal+" kcal" : "";
+      const div = document.createElement("div");
+      div.className = "item" + (done?" done":"");
+      div.onclick = () => tap(h.id);
+      div.innerHTML = `
+        <div class="box">
+          <svg class="tick" width="11" height="9" viewBox="0 0 11 9">
+            <path d="M1 4.5l3.5 3.5 5.5-7" stroke="#F0EBE1" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </div>
-      );
-    })}
-    <div style={{ display:"flex", alignItems:"center", gap:10, marginTop:8 }}>
-      <input type="range" min="0" max="100" value={cfaPct} onChange={e => saveCfa(Number(e.target.value))} />
-      <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:12, color:C.red, width:36, textAlign:"right" }}>{cfaPct}%</div>
-    </div>
-  </div>
-
-  <Divider label="DEADLINES" />
-  <div style={{ background:C.white, border:`1.5px solid ${C.dim}`, borderRadius:14, padding:"18px" }}>
-    {DEADLINES.map(d => {
-      const days = daysUntil(new Date(d.date)); if (days < 0) return null;
-      const isUrgent = days<=14 && d.type==="deadline";
-      const numColor = d.type!=="phase" ? C.red : C.navy;
-      return (
-        <div key={d.label} style={{ display:"flex", alignItems:"center", gap:14, padding:"11px 0", borderBottom:`1px solid ${C.dim}` }}>
-          <div style={{ width:48, height:48, flexShrink:0, borderRadius:d.type==="birthday"?"50%":10, background:isUrgent?C.red:`${numColor}12`, border:`2px solid ${isUrgent?C.red:numColor}`, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center" }}>
-            <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:16, color:isUrgent?C.cream:numColor, lineHeight:1 }}>{days}</div>
-            <div style={{ fontFamily:"monospace", fontSize:7, color:isUrgent?"rgba(240,235,225,0.7)":`${numColor}80` }}>days</div>
-          </div>
-          <div>
-            <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:12, color:C.navy, letterSpacing:"0.05em" }}>{d.label}</div>
-            <div style={{ fontFamily:"monospace", fontSize:10, color:C.muted, marginTop:2 }}>{d.sub}</div>
-          </div>
-          {isUrgent && <div style={{ marginLeft:"auto", fontFamily:"'Arial Black',sans-serif", fontSize:8, color:C.red, letterSpacing:"0.15em" }}>URGENT</div>}
-        </div>
-      );
-    })}
-  </div>
-</div>
-```
-
-);
+        <div>
+          <div class="item-text">${label}</div>
+          ${sub ? `<span class="cal-note">${sub}</span>` : ""}
+        </div>`;
+      el.appendChild(div);
+    });
+  });
+  drawScore();
 }
 
-function App() {
-const [tab, setTab] = useState(“today”);
-const phase = getCurrentPhase();
-return (
-<div style={{ background:C.cream, minHeight:“100vh” }}>
-<div style={{ background:C.navy, padding:“13px 24px”, display:“flex”, alignItems:“center”, justifyContent:“space-between”, position:“sticky”, top:0, zIndex:10 }}>
-<div style={{ fontFamily:”‘Arial Black’,sans-serif”, fontSize:14, color:C.cream, letterSpacing:“0.15em” }}>AHMED<span style={{ color:C.red }}>.</span></div>
-<div style={{ display:“flex”, alignItems:“center”, gap:14 }}>
-<div style={{ fontFamily:”‘Arial Black’,sans-serif”, fontSize:9, color:“rgba(240,235,225,0.4)”, letterSpacing:“0.15em” }}>P{phase.num} · {phase.name}</div>
-<div style={{ width:7, height:7, borderRadius:“50%”, background:C.red }} />
-<div style={{ fontFamily:”‘Arial Black’,sans-serif”, fontSize:9, color:“rgba(240,235,225,0.4)”, letterSpacing:“0.1em” }}>{daysUntil(BIRTHDAY)} DAYS</div>
-</div>
-</div>
-<div style={{ background:C.white, borderBottom:`1px solid ${C.dim}`, display:“flex”, position:“sticky”, top:44, zIndex:10 }}>
-<Tab label=“Today” active={tab===“today”} onClick={() => setTab(“today”)} />
-<Tab label=“Big Picture” active={tab===“big”} onClick={() => setTab(“big”)} />
-</div>
-<div style={{ paddingBottom:40 }}>
-{tab===“today” ? <TodayTab phase={phase} /> : <BigPictureTab phase={phase} />}
-</div>
-</div>
-);
+function tap(id) {
+  if (id==="cal" && !ticked[id]) {
+    document.getElementById("cal-popup").classList.add("show");
+    document.getElementById("cal-in").focus();
+    return;
+  }
+  ticked[id] = !ticked[id];
+  save();
+  drawHabits();
 }
 
-ReactDOM.createRoot(document.getElementById(“root”)).render(<App />);
+function logCal() {
+  const v = document.getElementById("cal-in").value;
+  if (!v) return;
+  calVal = v;
+  localStorage.setItem("kc_"+dk(), calVal);
+  ticked["cal"] = true;
+  save();
+  closeCal();
+  drawHabits();
+}
+
+function closeCal() {
+  document.getElementById("cal-popup").classList.remove("show");
+  document.getElementById("cal-in").value = "";
+}
+
+function save() { localStorage.setItem("tk_"+dk(), JSON.stringify(ticked)); }
+
+function drawScore() {
+  const n = Object.values(ticked).filter(Boolean).length;
+  const total = HB.length;
+  document.getElementById("score").innerHTML = n + `<span class="circle-den">/${total}</span>`;
+  document.getElementById("circle").classList.toggle("full", n===total);
+  document.getElementById("reward").textContent =
+    n===total ? "Gaming if friends on · Social media 1hr" :
+    n>=5 ? "Social media 30 min" : "Phone away after Isha";
+}
+
+function resetDay() {
+  if (!confirm("Reset today?")) return;
+  ticked = {}; calVal = "";
+  localStorage.removeItem("tk_"+dk());
+  localStorage.removeItem("kc_"+dk());
+  drawHabits();
+}
+
+// ── WEIGHT ────────────────────────────────────────────────────────────────────
+function saveW() {
+  const v = parseFloat(document.getElementById("w-in").value);
+  if (isNaN(v)) return;
+  sw = v; localStorage.setItem("sw", sw);
+  document.getElementById("w-in").value = "";
+  drawWeight();
+}
+
+function drawWeight() {
+  const gap = (sw-116).toFixed(1);
+  const pct = Math.max(0, Math.min(100, Math.round(((131.7-sw)/(131.7-116))*100)));
+  document.getElementById("w-show").textContent = sw;
+  document.getElementById("w-gap").textContent = gap+" kg to go";
+  document.getElementById("w-pbar").style.width = pct+"%";
+}
+
+// ── CFA ───────────────────────────────────────────────────────────────────────
+function setCfa(v) {
+  cfp = parseInt(v); localStorage.setItem("cfp", cfp);
+  document.getElementById("cfa-v").textContent = cfp+"%";
+  drawCfa();
+}
+
+function drawCfa() {
+  const p = gp();
+  const topics = [
+    {t:"Ethics & Professional Standards",p:1},
+    {t:"Quantitative Methods",p:2},
+    {t:"Fixed Income",p:3},
+    {t:"Portfolio Management",p:4},
+  ];
+  document.getElementById("cfa-list").innerHTML = topics.map(tp => {
+    const done = tp.p<p.n, active = tp.p===p.n;
+    const pct = done?100:active?cfp:0;
+    const col = done?"#2E7D4F":active?"#E8472A":"transparent";
+    const tc = done?"#2E7D4F":active?"#1C2B4A":"rgba(28,43,74,0.3)";
+    const pc = done?"#2E7D4F":active?"#E8472A":"rgba(28,43,74,0.3)";
+    return `<div class="cfa-item">
+      <div class="cfa-hdr">
+        <div class="cfa-name" style="color:${tc}">${done?"✓ ":active?"→ ":""}${tp.t}</div>
+        <div class="cfa-pct" style="color:${pc}">${done?"100%":active?cfp+"%":"—"}</div>
+      </div>
+      <div class="cfa-bar"><div class="cfa-fill" style="background:${col};width:${pct}%"></div></div>
+    </div>`;
+  }).join("");
+}
+
+// ── PHASES ────────────────────────────────────────────────────────────────────
+function drawPhases() {
+  const p = gp();
+  const left = Math.max(0, Math.ceil((p.e-new Date())/86400000));
+  const total = Math.ceil((p.e-p.s)/86400000);
+  const pct = Math.round(((total-left)/total)*100);
+  document.getElementById("ph-grid").innerHTML = PH.map(ph => {
+    const done=ph.n<p.n, active=ph.n===p.n;
+    const fpct=done?100:active?pct:0;
+    const fc=done?"#1C2B4A":active?"#E8472A":"transparent";
+    const nc=active?"#E8472A":done?"#1C2B4A":"rgba(28,43,74,0.3)";
+    return `<div>
+      <div class="ph-bar"><div class="ph-fill" style="background:${fc};width:${fpct}%"></div></div>
+      <div class="ph-name" style="color:${nc}">P${ph.n} ${ph.name.slice(0,5)}</div>
+    </div>`;
+  }).join("");
+  document.getElementById("ph-note").innerHTML = `Now: <strong style="color:#E8472A">${p.cfa}</strong> · target <strong>${p.wt} kg</strong>`;
+}
+
+// ── DEADLINES ─────────────────────────────────────────────────────────────────
+function drawDeadlines() {
+  document.getElementById("dl-list").innerHTML = DL.map(d => {
+    const days = du(new Date(d.d));
+    if (days < 0) return "";
+    const urgent = days<=14&&d.t==="deadline";
+    const circle = d.t==="birthday";
+    const nc = d.t==="phase"?"#1C2B4A":"#E8472A";
+    const bs = urgent
+      ? "background:#E8472A;border-color:#E8472A;color:#F0EBE1"
+      : `background:${nc}14;border-color:${nc};color:${nc}`;
+    return `<div class="dl">
+      <div class="dl-badge" style="${bs};border-radius:${circle?"50%":"10px"}">
+        <div class="dl-days">${days}</div>
+        <div class="dl-lbl">days</div>
+      </div>
+      <div>
+        <div class="dl-name">${d.n}</div>
+        <div class="dl-sub">${d.s}</div>
+      </div>
+      ${urgent?'<div class="urgent">URGENT</div>':""}
+    </div>`;
+  }).join("");
+}
+
+// ── TOPBAR & BANNER ───────────────────────────────────────────────────────────
+function drawTop() {
+  const p = gp();
+  const left = Math.max(0, Math.ceil((p.e-new Date())/86400000));
+  document.getElementById("hphase").textContent = `P${p.n} · ${p.name}`;
+  document.getElementById("hdays").textContent = `${du(BD)} DAYS`;
+  document.getElementById("b-phase").textContent = `PHASE ${p.n} · ${p.name}`;
+  document.getElementById("b-tagline").textContent = p.tl;
+  document.getElementById("b-days").textContent = left;
+  document.getElementById("c1").textContent = du(BD);
+  document.getElementById("c2").textContent = left;
+  document.getElementById("c2l").textContent = `days in phase ${p.n}`;
+  document.getElementById("c3").textContent = du(new Date("2026-05-11"));
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+setMode("floor");
+drawTop();
+drawHabits();
+drawWeight();
+document.getElementById("cfa-sl").value = cfp;
+document.getElementById("cfa-v").textContent = cfp+"%";
+drawCfa();
+drawPhases();
+drawDeadlines();
 </script>
-
 </body>
 </html>
