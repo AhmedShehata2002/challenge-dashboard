@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ahmed.">
+<meta name="theme-color" content="#1C2B4A">
+<title>Ahmed.</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%231C2B4A'/><text y='.9em' font-size='80' x='10' fill='%23E8472A' font-family='Arial Black'>A.</text></svg>">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { background: #F0EBE1; font-family: Georgia, serif; color: #1C2B4A; overscroll-behavior: none; }
+  input[type=range] { accent-color: #E8472A; cursor: pointer; width: 100%; }
+  input::placeholder { color: rgba(28,43,74,0.3); font-style: italic; }
+  button:active { opacity: 0.8; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  ::-webkit-scrollbar { display: none; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+const BIRTHDAY = new Date("2026-07-20");
+const PHASES = [
+  { num: 1, name: "FOUNDATION", range: "Apr 13 – May 4", start: new Date("2026-04-13"), end: new Date("2026-05-04"), weightTarget: 126, tagline: "Build the floor. No heroics.", cfaTopic: "Ethics & Professional Standards" },
+  { num: 2, name: "BUILD", range: "May 5 – May 25", start: new Date("2026-05-05"), end: new Date("2026-05-25"), weightTarget: 122, tagline: "Habits locked. Raise the intensity.", cfaTopic: "Quantitative Methods" },
+  { num: 3, name: "PUSH", range: "May 26 – Jun 15", start: new Date("2026-05-26"), end: new Date("2026-06-15"), weightTarget: 119, tagline: "This is where most people stop. You don't.", cfaTopic: "Fixed Income" },
+  { num: 4, name: "FINISH", range: "Jun 16 – Jul 20", start: new Date("2026-06-16"), end: new Date("2026-07-20"), weightTarget: 116, tagline: "Lock in who you've become.", cfaTopic: "Portfolio Management" },
+];
+const DEADLINES = [
+  { date: "2026-05-04", label: "Phase 1 ends", sub: "Target 126 kg", type: "phase" },
+  { date: "2026-05-11", label: "MSc Assignments due", sub: "Both submissions", type: "deadline" },
+  { date: "2026-05-25", label: "Phase 2 ends", sub: "Target 122 kg", type: "phase" },
+  { date: "2026-06-15", label: "Phase 3 ends", sub: "Target 119 kg", type: "phase" },
+  { date: "2026-07-20", label: "Birthday", sub: "116 kg · Paper submitted · CFA 35%", type: "birthday" },
+];
+const HABITS = [
+  { id: "calories", section: "BODY", hasCalInput: true, floor: { label: "Calories under 1800 kcal", mins: 0 }, push: { label: "Calories under 1600 kcal", mins: 0 } },
+  { id: "protein", section: "BODY", floor: { label: "Hit 180g protein", mins: 0 }, push: { label: "Hit 200g+ protein", mins: 0 } },
+  { id: "movement", section: "BODY", floor: { label: "20 min movement — walk, bike, anything", mins: 20 }, push: { label: "Full training session — gym or run", mins: 60 } },
+  { id: "prayers", section: "BODY", floor: { label: "Prayed all 5", mins: 0 }, push: { label: "Prayed all 5 on time", mins: 0 } },
+  { id: "cfa", section: "MIND", floor: { label: "30 min CFA — one reading or quiz", mins: 30 }, push: { label: "60 min CFA — full reading + Obsidian notes", mins: 60 } },
+  { id: "masters", section: "MIND", floor: { label: "30 min Masters — any assignment work", mins: 30 }, push: { label: "90 min Masters — deep assignment session", mins: 90 } },
+  { id: "paper", section: "MIND", floor: { label: "10 min Paper — one action, anything", mins: 10 }, push: { label: "30 min Paper — writing or revision", mins: 30 } },
+];
+const C = { navy:"#1C2B4A", cream:"#F0EBE1", red:"#E8472A", white:"#FFFFFF", muted:"rgba(28,43,74,0.38)", dim:"rgba(28,43,74,0.1)", dimMid:"rgba(28,43,74,0.18)" };
+
+function daysUntil(date) { return Math.ceil((new Date(date) - new Date()) / 86400000); }
+function toRFC3339Dubai(date) { const pad = n => String(n).padStart(2,"0"); return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}+04:00`; }
+function todayStr() { const pad = n => String(n).padStart(2,"0"); const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+function tomorrowStr() { const d = new Date(); d.setDate(d.getDate()+1); const pad = n => String(n).padStart(2,"0"); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+function getCurrentPhase() { const now = new Date(); for (const p of PHASES) { if (now >= p.start && now <= p.end) return p; } return PHASES[3]; }
+
+async function logToGCal(habitId, mins, mode, cfaTopic, calorieVal) {
+  const titles = {
+    calories: calorieVal ? `Nutrition — ${calorieVal} kcal (${mode==="floor"?"under 1800":"under 1600"})` : `Nutrition — Calories ${mode==="floor"?"under 1800 kcal":"under 1600 kcal"}`,
+    protein: mode==="floor" ? "Nutrition — 180g Protein" : "Nutrition — 200g+ Protein · Push",
+    movement: mode==="floor" ? "Movement — 20 min session" : "Training — Full session",
+    prayers: mode==="floor" ? "Prayers — All 5 done" : "Prayers — All 5 on time",
+    cfa: `CFA — ${cfaTopic} (${mins}min)`,
+    masters: mode==="floor" ? "Masters — 30 min block" : "Masters — 90 min deep session",
+    paper: mode==="floor" ? "Water Security Paper — action" : "Water Security Paper — writing session",
+  };
+  const title = titles[habitId];
+  const now = new Date();
+  let eventJson;
+  if (mins > 0) {
+    const start = new Date(now.getTime() - mins * 60000);
+    eventJson = { summary: title, description: "Logged via Ahmed's 98-day challenge dashboard", start: { dateTime: toRFC3339Dubai(start), timeZone: "Asia/Dubai" }, end: { dateTime: toRFC3339Dubai(now), timeZone: "Asia/Dubai" } };
+  } else {
+    eventJson = { summary: title, description: "Logged via Ahmed's 98-day challenge dashboard", start: { date: todayStr() }, end: { date: tomorrowStr() } };
+  }
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 512, mcp_servers: [{ type: "url", url: "https://gcal.mcp.claude.com/mcp", name: "gcal" }], messages: [{ role: "user", content: `Create this Google Calendar event on my primary calendar with sendUpdates none:\n\n${JSON.stringify(eventJson, null, 2)}\n\nReply only with "created".` }] })
+    });
+    if (!res.ok) return { ok: false, error: `HTTP ${res.status}` };
+    const data = await res.json();
+    if (data.error) return { ok: false, error: data.error.message };
+    return { ok: true, title };
+  } catch(e) { return { ok: false, error: e.message }; }
+}
+
+function Tab({ label, active, onClick }) {
+  return <button onClick={onClick} style={{ padding:"14px 32px", border:"none", cursor:"pointer", fontFamily:"'Arial Black',sans-serif", fontSize:11, letterSpacing:"0.2em", textTransform:"uppercase", background:active?C.navy:"transparent", color:active?C.cream:C.muted, borderBottom:active?`3px solid ${C.red}`:"3px solid transparent", transition:"all 0.15s" }}>{label}</button>;
+}
+
+function Divider({ label }) {
+  return <div style={{ display:"flex", alignItems:"center", gap:12, margin:"22px 0 14px" }}><div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:9, letterSpacing:"0.25em", color:C.muted }}>{label}</div><div style={{ flex:1, height:1, background:C.dim }} /></div>;
+}
+
+function HabitRow({ label, subLabel, done, loading, gcalStatus, onTick }) {
+  return (
+    <div onClick={!loading?onTick:undefined} style={{ display:"flex", alignItems:"center", gap:14, padding:"12px 14px", borderRadius:10, cursor:loading?"default":"pointer", marginBottom:4, background:done?"rgba(28,43,74,0.06)":C.white, border:`1.5px solid ${done?C.navy:C.dim}`, transition:"all 0.12s", opacity:loading?0.75:1 }}>
+      <div style={{ width:20, height:20, borderRadius:4, flexShrink:0, border:`2px solid ${done?C.navy:loading?C.red:C.dimMid}`, background:done?C.navy:"transparent", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.12s" }}>
+        {loading && !done && <div style={{ width:8, height:8, border:`2px solid ${C.red}`, borderTopColor:"transparent", borderRadius:"50%", animation:"spin 0.7s linear infinite" }} />}
+        {done && !loading && <svg width="10" height="8" viewBox="0 0 10 8"><path d="M1 4l3 3 5-6" stroke={C.cream} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+      </div>
+      <div style={{ flex:1 }}>
+        <div style={{ fontFamily:"Georgia,serif", fontSize:13, color:done?C.muted:C.navy, textDecoration:done?"line-through":"none", lineHeight:1.4 }}>{label}</div>
+        {subLabel && <div style={{ fontFamily:"monospace", fontSize:9, color:C.red, marginTop:2 }}>{subLabel}</div>}
+        {loading && <div style={{ fontFamily:"monospace", fontSize:9, color:C.red, marginTop:2 }}>logging to calendar...</div>}
+        {!loading && gcalStatus==="logged" && <div style={{ fontFamily:"monospace", fontSize:9, color:"#2E7D4F", marginTop:2 }}>+ added to GCal</div>}
+        {!loading && gcalStatus && gcalStatus!=="logged" && <div style={{ fontFamily:"monospace", fontSize:9, color:C.red, marginTop:2 }}>error: {gcalStatus}</div>}
+      </div>
+    </div>
+  );
+}
+
+function TodayTab({ phase }) {
+  const [mode, setMode] = useState("floor");
+  const [ticked, setTicked] = useState({});
+  const [loading, setLoading] = useState({});
+  const [gcalStatus, setGcalStatus] = useState({});
+  const [calInput, setCalInput] = useState("");
+  const [showCalInput, setShowCalInput] = useState(false);
+
+  const score = Object.values(ticked).filter(Boolean).length;
+  const total = HABITS.length;
+  const phaseDaysLeft = Math.max(0, Math.ceil((phase.end - new Date()) / 86400000));
+  const reward = score===total ? "Gaming if friends on · Social media 1hr" : score>=5 ? "Social media 30 min" : "Phone away after Isha";
+
+  const fire = async (habit, cal) => {
+    const item = mode==="floor" ? habit.floor : habit.push;
+    setTicked(p => ({ ...p, [habit.id]: true }));
+    setLoading(p => ({ ...p, [habit.id]: true }));
+    const result = await logToGCal(habit.id, item.mins, mode, phase.cfaTopic, cal||null);
+    setLoading(p => ({ ...p, [habit.id]: false }));
+    setGcalStatus(p => ({ ...p, [habit.id]: result.ok?"logged":result.error }));
+  };
+
+  const handleTick = (habit) => {
+    if (ticked[habit.id]) { setTicked(p => ({ ...p, [habit.id]:false })); setGcalStatus(p => ({ ...p, [habit.id]:null })); return; }
+    if (habit.hasCalInput) { setShowCalInput(true); return; }
+    fire(habit);
+  };
+
+  const handleCalSubmit = () => {
+    if (!calInput) return;
+    const habit = HABITS.find(h => h.id==="calories");
+    setShowCalInput(false);
+    fire(habit, calInput);
+  };
+
+  return (
+    <div style={{ padding:"24px 20px", maxWidth:580, margin:"0 auto" }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:24, padding:"16px 20px", background:C.navy, borderRadius:14 }}>
+        <div>
+          <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:9, letterSpacing:"0.2em", color:C.red, marginBottom:4 }}>PHASE {phase.num} · {phase.name}</div>
+          <div style={{ fontFamily:"Georgia,serif", fontSize:13, color:C.cream, fontStyle:"italic" }}>{phase.tagline}</div>
+        </div>
+        <div style={{ textAlign:"right" }}>
+          <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:38, color:C.red, lineHeight:1 }}>{phaseDaysLeft}</div>
+          <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:8, letterSpacing:"0.15em", color:"rgba(240,235,225,0.4)", marginTop:2 }}>DAYS LEFT</div>
+        </div>
+      </div>
+
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
+        <div>
+          <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:9, letterSpacing:"0.2em", color:C.muted, marginBottom:3 }}>TODAY'S MODE</div>
+          <div style={{ fontFamily:"Georgia,serif", fontSize:12, color:C.navy, fontStyle:"italic" }}>{mode==="floor"?"Bare minimum that gets you there":"Feeling good — go harder"}</div>
+        </div>
+        <div style={{ display:"flex", border:`2px solid ${C.navy}`, borderRadius:8, overflow:"hidden" }}>
+          {[["floor","Floor"],["push","Push"]].map(([val,lbl]) => (
+            <button key={val} onClick={() => setMode(val)} style={{ padding:"9px 20px", border:"none", cursor:"pointer", fontFamily:"'Arial Black',sans-serif", fontSize:10, letterSpacing:"0.1em", background:mode===val?C.navy:"transparent", color:mode===val?C.cream:C.navy, transition:"all 0.15s" }}>{lbl}</button>
+          ))}
+        </div>
+      </div>
+
+      {showCalInput && (
+        <div style={{ marginBottom:16, padding:"14px 16px", background:C.white, border:`2px solid ${C.navy}`, borderRadius:12 }}>
+          <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:9, letterSpacing:"0.2em", color:C.navy, marginBottom:10 }}>HOW MANY KCAL TODAY?</div>
+          <div style={{ display:"flex", gap:8 }}>
+            <input autoFocus type="number" value={calInput} onChange={e => setCalInput(e.target.value)} onKeyDown={e => e.key==="Enter" && calInput && handleCalSubmit()} placeholder="e.g. 1650"
+              style={{ flex:1, border:`2px solid ${C.navy}`, borderRadius:8, padding:"9px 14px", fontFamily:"'Arial Black',sans-serif", fontSize:16, color:C.navy, background:C.cream, outline:"none" }} />
+            <button onClick={handleCalSubmit} disabled={!calInput} style={{ background:calInput?C.navy:C.dim, color:C.cream, border:"none", borderRadius:8, padding:"9px 18px", fontFamily:"'Arial Black',sans-serif", fontSize:10, cursor:calInput?"pointer":"default", letterSpacing:"0.1em" }}>LOG</button>
+            <button onClick={() => setShowCalInput(false)} style={{ background:"transparent", color:C.muted, border:`1.5px solid ${C.dim}`, borderRadius:8, padding:"9px 14px", fontFamily:"'Arial Black',sans-serif", fontSize:10, cursor:"pointer" }}>✕</button>
+          </div>
+        </div>
+      )}
+
+      <Divider label="BODY" />
+      {HABITS.filter(h => h.section==="BODY").map(habit => (
+        <HabitRow key={habit.id} label={(mode==="floor"?habit.floor:habit.push).label}
+          subLabel={habit.id==="calories" && ticked["calories"] && calInput ? `${calInput} kcal logged` : null}
+          done={!!ticked[habit.id]} loading={!!loading[habit.id]} gcalStatus={gcalStatus[habit.id]} onTick={() => handleTick(habit)} />
+      ))}
+
+      <Divider label="MIND" />
+      {HABITS.filter(h => h.section==="MIND").map(habit => (
+        <HabitRow key={habit.id} label={(mode==="floor"?habit.floor:habit.push).label}
+          done={!!ticked[habit.id]} loading={!!loading[habit.id]} gcalStatus={gcalStatus[habit.id]} onTick={() => handleTick(habit)} />
+      ))}
+
+      <div style={{ marginTop:24, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"18px 22px", background:C.navy, borderRadius:14 }}>
+        <div>
+          <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:9, letterSpacing:"0.2em", color:"rgba(240,235,225,0.4)", marginBottom:4 }}>TODAY'S REWARD</div>
+          <div style={{ fontFamily:"Georgia,serif", fontSize:13, color:C.cream }}>{reward}</div>
+        </div>
+        <div style={{ width:64, height:64, borderRadius:"50%", background:score===total?C.red:"rgba(232,71,42,0.15)", display:"flex", alignItems:"center", justifyContent:"center", transition:"background 0.3s" }}>
+          <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:20, color:score===total?C.cream:C.red, lineHeight:1 }}>{score}<span style={{ fontSize:11 }}>/{total}</span></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BigPictureTab({ phase }) {
+  const [weight, setWeight] = useState(() => localStorage.getItem("weight") || "131.7");
+  const [savedWeight, setSavedWeight] = useState(() => parseFloat(localStorage.getItem("savedWeight")) || 131.7);
+  const [cfaPct, setCfaPct] = useState(() => parseInt(localStorage.getItem("cfaPct")) || 0);
+
+  const totalLoss = (savedWeight - 116).toFixed(1);
+  const weightPct = Math.max(0, Math.min(100, Math.round(((131.7 - savedWeight) / (131.7 - 116)) * 100)));
+  const phaseDaysLeft = Math.max(0, Math.ceil((phase.end - new Date()) / 86400000));
+  const phaseTotalDays = Math.ceil((phase.end - phase.start) / 86400000);
+  const phasePct = Math.round(((phaseTotalDays - phaseDaysLeft) / phaseTotalDays) * 100);
+
+  const saveWeight = () => {
+    const val = parseFloat(weight) || savedWeight;
+    setSavedWeight(val);
+    localStorage.setItem("savedWeight", val);
+    localStorage.setItem("weight", weight);
+  };
+
+  const saveCfa = (val) => {
+    setCfaPct(val);
+    localStorage.setItem("cfaPct", val);
+  };
+
+  return (
+    <div style={{ padding:"24px 20px", maxWidth:580, margin:"0 auto" }}>
+      <div style={{ background:C.navy, borderRadius:16, padding:"24px", marginBottom:20, position:"relative", overflow:"hidden" }}>
+        <div style={{ position:"absolute", top:-10, right:16, fontFamily:"'Arial Black',sans-serif", fontSize:130, color:"rgba(255,255,255,0.04)", lineHeight:1, userSelect:"none" }}>24</div>
+        <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:9, letterSpacing:"0.25em", color:C.red, marginBottom:14 }}>JULY 20 · YOU TURN 24 · WHO ARE YOU?</div>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:18 }}>
+          {[["116 kg","on the scale"],["CFA 35%","completed"],["Published","researcher"],["1st Class","all assignments"]].map(([n,l]) => (
+            <div key={n} style={{ display:"flex", alignItems:"center", gap:10 }}>
+              <div style={{ width:32, height:32, borderRadius:"50%", background:C.red, flexShrink:0 }} />
+              <div>
+                <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:13, color:C.cream }}>{n}</div>
+                <div style={{ fontFamily:"monospace", fontSize:9, color:"rgba(240,235,225,0.35)", letterSpacing:"0.08em" }}>{l}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ borderTop:"1px solid rgba(255,255,255,0.08)", paddingTop:14, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+          <div style={{ fontFamily:"Georgia,serif", fontSize:16, color:"rgba(232,71,42,0.85)" }}>وَعَلَى اللَّهِ فَتَوَكَّلُوا</div>
+          <div style={{ fontFamily:"Georgia,serif", fontSize:11, color:"rgba(240,235,225,0.3)", fontStyle:"italic" }}>Plan fully · Trust Allah</div>
+        </div>
+      </div>
+
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10, marginBottom:6 }}>
+        {[[daysUntil(BIRTHDAY),"days to birthday"],[phaseDaysLeft,`days in phase ${phase.num}`],[daysUntil(new Date("2026-05-11")),"days to May 11"]].map(([n,l]) => (
+          <div key={l} style={{ background:C.white, border:`2px solid ${C.navy}`, borderRadius:14, padding:"16px 14px", textAlign:"center" }}>
+            <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:36, color:C.red, lineHeight:1 }}>{n}</div>
+            <div style={{ fontFamily:"monospace", fontSize:9, color:C.muted, letterSpacing:"0.08em", marginTop:4 }}>{l}</div>
+          </div>
+        ))}
+      </div>
+
+      <Divider label="PHASES" />
+      <div style={{ background:C.white, border:`1.5px solid ${C.dim}`, borderRadius:14, padding:"18px", marginBottom:4 }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8, marginBottom:12 }}>
+          {PHASES.map(p => {
+            const done = p.num < phase.num; const active = p.num === phase.num;
+            return (
+              <div key={p.num}>
+                <div style={{ height:6, borderRadius:3, background:C.dim, marginBottom:5, overflow:"hidden" }}>
+                  <div style={{ height:"100%", borderRadius:3, transition:"width 0.4s", background:done?C.navy:active?C.red:"transparent", width:done?"100%":active?`${phasePct}%`:"0%" }} />
+                </div>
+                <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:8, letterSpacing:"0.1em", color:active?C.red:done?C.navy:C.muted }}>P{p.num} {p.name.slice(0,5)}</div>
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ fontFamily:"Georgia,serif", fontSize:12, color:C.navy, fontStyle:"italic" }}>
+          Now: <strong style={{ fontStyle:"normal", color:C.red }}>{phase.cfaTopic}</strong> · target <strong style={{ fontStyle:"normal" }}>{phase.weightTarget} kg</strong>
+        </div>
+      </div>
+
+      <Divider label="WEIGHT" />
+      <div style={{ background:C.white, border:`1.5px solid ${C.dim}`, borderRadius:14, padding:"18px", marginBottom:4 }}>
+        <div style={{ display:"flex", alignItems:"baseline", gap:10, marginBottom:12 }}>
+          <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:52, color:C.navy, lineHeight:1 }}>{savedWeight}</div>
+          <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:20, color:C.red }}>→</div>
+          <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:32, color:C.muted }}>116</div>
+          <div style={{ fontFamily:"monospace", fontSize:10, color:C.muted, marginLeft:4 }}>{totalLoss} kg to go</div>
+        </div>
+        <div style={{ background:C.cream, borderRadius:4, height:8, marginBottom:14 }}>
+          <div style={{ background:C.red, height:8, borderRadius:4, width:`${weightPct}%`, transition:"width 0.5s" }} />
+        </div>
+        <div style={{ display:"flex", gap:8 }}>
+          <input value={weight} onChange={e => setWeight(e.target.value)} type="number" step="0.1"
+            style={{ flex:1, border:`2px solid ${C.navy}`, borderRadius:8, padding:"9px 14px", fontFamily:"'Arial Black',sans-serif", fontSize:14, color:C.navy, background:C.cream, outline:"none" }} />
+          <button onClick={saveWeight} style={{ background:C.navy, color:C.cream, border:"none", borderRadius:8, padding:"9px 20px", fontFamily:"'Arial Black',sans-serif", fontSize:10, cursor:"pointer", letterSpacing:"0.1em" }}>SAVE</button>
+        </div>
+      </div>
+
+      <Divider label="CFA PROGRESS" />
+      <div style={{ background:C.white, border:`1.5px solid ${C.dim}`, borderRadius:14, padding:"18px", marginBottom:4 }}>
+        <div style={{ fontFamily:"monospace", fontSize:9, color:C.muted, letterSpacing:"0.12em", marginBottom:14 }}>TARGET 35% BY JUL 20</div>
+        {[{topic:"Ethics & Professional Standards",p:1},{topic:"Quantitative Methods",p:2},{topic:"Fixed Income",p:3},{topic:"Portfolio Management",p:4}].map(t => {
+          const isActive = t.p===phase.num; const isDone = t.p<phase.num;
+          return (
+            <div key={t.topic} style={{ marginBottom:12 }}>
+              <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
+                <div style={{ fontFamily:"monospace", fontSize:10, color:isDone?"#2E7D4F":isActive?C.navy:C.muted }}>{isDone?"✓ ":isActive?"→ ":""}{t.topic}</div>
+                <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:10, color:isActive?C.red:isDone?"#2E7D4F":C.muted }}>{isDone?"100%":isActive?`${cfaPct}%`:"—"}</div>
+              </div>
+              <div style={{ background:C.cream, borderRadius:3, height:5 }}>
+                <div style={{ background:isDone?"#2E7D4F":isActive?C.red:"transparent", height:5, borderRadius:3, width:isDone?"100%":isActive?`${cfaPct}%`:"0%", transition:"width 0.4s" }} />
+              </div>
+            </div>
+          );
+        })}
+        <div style={{ display:"flex", alignItems:"center", gap:10, marginTop:8 }}>
+          <input type="range" min="0" max="100" value={cfaPct} onChange={e => saveCfa(Number(e.target.value))} />
+          <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:12, color:C.red, width:36, textAlign:"right" }}>{cfaPct}%</div>
+        </div>
+      </div>
+
+      <Divider label="DEADLINES" />
+      <div style={{ background:C.white, border:`1.5px solid ${C.dim}`, borderRadius:14, padding:"18px" }}>
+        {DEADLINES.map(d => {
+          const days = daysUntil(new Date(d.date)); if (days < 0) return null;
+          const isUrgent = days<=14 && d.type==="deadline";
+          const numColor = d.type!=="phase" ? C.red : C.navy;
+          return (
+            <div key={d.label} style={{ display:"flex", alignItems:"center", gap:14, padding:"11px 0", borderBottom:`1px solid ${C.dim}` }}>
+              <div style={{ width:48, height:48, flexShrink:0, borderRadius:d.type==="birthday"?"50%":10, background:isUrgent?C.red:`${numColor}12`, border:`2px solid ${isUrgent?C.red:numColor}`, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center" }}>
+                <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:16, color:isUrgent?C.cream:numColor, lineHeight:1 }}>{days}</div>
+                <div style={{ fontFamily:"monospace", fontSize:7, color:isUrgent?"rgba(240,235,225,0.7)":`${numColor}80` }}>days</div>
+              </div>
+              <div>
+                <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:12, color:C.navy, letterSpacing:"0.05em" }}>{d.label}</div>
+                <div style={{ fontFamily:"monospace", fontSize:10, color:C.muted, marginTop:2 }}>{d.sub}</div>
+              </div>
+              {isUrgent && <div style={{ marginLeft:"auto", fontFamily:"'Arial Black',sans-serif", fontSize:8, color:C.red, letterSpacing:"0.15em" }}>URGENT</div>}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  const [tab, setTab] = useState("today");
+  const phase = getCurrentPhase();
+  return (
+    <div style={{ background:C.cream, minHeight:"100vh" }}>
+      <div style={{ background:C.navy, padding:"13px 24px", display:"flex", alignItems:"center", justifyContent:"space-between", position:"sticky", top:0, zIndex:10 }}>
+        <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:14, color:C.cream, letterSpacing:"0.15em" }}>AHMED<span style={{ color:C.red }}>.</span></div>
+        <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+          <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:9, color:"rgba(240,235,225,0.4)", letterSpacing:"0.15em" }}>P{phase.num} · {phase.name}</div>
+          <div style={{ width:7, height:7, borderRadius:"50%", background:C.red }} />
+          <div style={{ fontFamily:"'Arial Black',sans-serif", fontSize:9, color:"rgba(240,235,225,0.4)", letterSpacing:"0.1em" }}>{daysUntil(BIRTHDAY)} DAYS</div>
+        </div>
+      </div>
+      <div style={{ background:C.white, borderBottom:`1px solid ${C.dim}`, display:"flex", position:"sticky", top:44, zIndex:10 }}>
+        <Tab label="Today" active={tab==="today"} onClick={() => setTab("today")} />
+        <Tab label="Big Picture" active={tab==="big"} onClick={() => setTab("big")} />
+      </div>
+      <div style={{ paddingBottom:40 }}>
+        {tab==="today" ? <TodayTab phase={phase} /> : <BigPictureTab phase={phase} />}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
